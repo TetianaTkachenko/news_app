@@ -1,20 +1,44 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { View } from 'react-native';
+import * as Font from 'expo-font';
+import * as SplashScreen from 'expo-splash-screen';
+import { useEffect, useCallback, useState } from 'react';
+import Navigate from './navigate';
+
+SplashScreen.preventAutoHideAsync()
 
 export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
-}
+  const [isFontLoaded, setFont] = useState(false)
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+  useEffect(() => {
+    async function prepare() {
+      try {
+        await Font.loadAsync({
+          'mt-light': require('./assets/fonts/Montserrat-Light.ttf'),
+          'mt-bold': require('./assets/fonts/Montserrat-Bold.ttf')
+        })
+      } catch (e) {
+        console.warn(e)
+      } finally {
+        setFont(true);
+      }
+    }
+
+    prepare();
+  }, []);
+
+  const onLayoutRootView = useCallback(async () => {
+    if (isFontLoaded) {
+      await SplashScreen.hideAsync();
+    }
+  }, [isFontLoaded]);
+
+  if (!isFontLoaded) {
+    return null;
+  }
+
+  return (
+    <View onLayout={onLayoutRootView} style={{ flex: 1 }}>
+      <Navigate />
+    </View>
+  )
+}
